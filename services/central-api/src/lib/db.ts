@@ -42,6 +42,12 @@ export async function listLicenses(db: D1Database): Promise<License[]> {
     .all<License>()).results;
 }
 
+export async function listRevokedLicenseIds(db: D1Database): Promise<{ license_id: string; revoked_at: string }[]> {
+  return (await db
+    .prepare("SELECT id AS license_id, revoked_at FROM licenses WHERE revoked_at IS NOT NULL ORDER BY revoked_at DESC")
+    .all<{ license_id: string; revoked_at: string }>()).results;
+}
+
 export async function getLicenseBySaleId(
   db: D1Database,
   saleId: string,

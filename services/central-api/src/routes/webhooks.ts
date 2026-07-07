@@ -45,8 +45,8 @@ app.post("/gumroad", async (c) => {
   const payload = {
     license_id: licenseId,
     org_id: `org-${sale.sale_id.slice(0, 8)}`,
-    issued_at: Math.floor(now.getTime() / 1000),
-    expires_at: null,
+    iat: Math.floor(now.getTime() / 1000),
+    exp: null,
     seats: 50,
     modules: ["core"],
   };

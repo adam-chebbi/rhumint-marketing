@@ -49,24 +49,58 @@ deployments), the service stays comfortably within Cloudflare's free allocation.
 If the service grows to thousands of daily validation requests, the Workers Paid
 plan ($5/month) covers 10x the free limits.
 
+## API contract
+
+The full, versioned API contract is documented at `docs/modules/license-api.md`.
+This is the **single source of truth** for the HTTP contract between
+`rhumint-hrms` and `rhumint-central-api`. Both repos must agree on every
+endpoint, field, error code, and token format described there.
+
+### Token payload format
+
+Token payload fields MUST match what `rhumint-hrms` expects:
+
+```
+license_id, org_id, iat, exp (null for lifetime), seats, modules
+```
+
+The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
+`rhumint-hrms` parses these exact names in `LicenseClaims._parse_claims()`.
+
 ## Status
 
 - [x] Repository scaffolded (README, STATUS.md, .gitignore)
 - [x] Central API skeleton (Workers + D1)
   - [x] `wrangler.jsonc` with D1 binding
   - [x] Hono router with three route modules
-  - [x] `POST /api/license/issue` — issue signed license token
-  - [x] `GET /api/license/:id` — get license details
-  - [x] `POST /api/license/validate` — validate token against DB
-  - [x] `POST /api/license/:id/revoke` — revoke a license
-  - [x] `GET /api/license` — list all licenses
-  - [x] `GET /api/updates/manifest` — version manifest
-  - [x] `POST /api/webhooks/gumroad` — Gumroad sale webhook receiver
   - [x] Ed25519 signing via Web Crypto API (`crypto.subtle`)
   - [x] D1 migration: `001_initial.sql` (licenses table + indexes)
   - [x] `.dev.vars.example` with documentation
+- [x] License issuing endpoint (`POST /api/license/issue`)
+  - [x] Validates inputs (org_id, seats > 0, modules non-empty)
+  - [x] Signs Ed25519 token with correct field names (`license_id`, `org_id`, `iat`, `exp`, `seats`, `modules`)
+  - [x] Stores license record in D1
+  - [x] Returns token string + license_id
+- [x] Online validation endpoint (`GET|POST /api/license/validate`)
+  - [x] Accepts token via query param (GET) or body (POST)
+  - [x] Decodes payload to extract license_id
+  - [x] Looks up license in D1 (revoked? expired? exists?)
+  - [x] Returns `valid: true/false` with metadata
+- [x] License details endpoint (`GET /api/license/:id`)
+- [x] License list endpoint (`GET /api/license`)
+- [x] Revocation endpoint (`POST /api/license/:id/revoke`)
+  - [x] Marks license as revoked (idempotent)
+- [x] Revocation list endpoint (`GET /api/license/revocations/list`)
+  - [x] Returns array of `{license_id, revoked_at}` for all revoked licenses
+  - [x] Used by `rhumint-hrms` for opportunistic offline revocation checks
+- [x] Version manifest endpoint (`GET /api/updates/manifest`)
+  - [x] Returns latest_version, docker_tag, changelog
+- [x] Gumroad webhook endpoint (`POST /api/webhooks/gumroad`)
+  - [x] Signed header verification (optional)
+  - [x] Deduplication by sale_id
+  - [x] Auto-issues lifetime license
+- [x] API contract documented in `docs/modules/license-api.md`
 - [ ] Next.js app initialized on Cloudflare Pages (`site/`)
-- [ ] Gumroad webhook receiver + sale sync (endpoint exists, needs Gumroad test)
 - [ ] Product-owner admin panel (sales dashboard, license CRUD)
 - [ ] Marketing pages (landing, features, pricing)
 - [ ] Everything below is not yet started

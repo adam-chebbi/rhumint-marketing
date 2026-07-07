@@ -3,19 +3,23 @@
  *
  * PRIVATE KEY lives ONLY in this Worker (as a Cloudflare secret).
  * The PUBLIC key is embedded at build time into the rhumint-hrms app
- * (backend/app/core/licensing.py) and is safe to distribute — Ed25519
+ * (backend/app/core/license.py) and is safe to distribute — Ed25519
  * public keys cannot derive the private key.
  *
- * Token format (mirrors rhumint-hrms):
+ * Token format (must match rhumint-hrms backend/app/core/license.py):
  *   base64url(payload).base64url(signature)
- * where payload is a JSON-serialized LicenseTokenPayload.
+ *
+ * Payload field names MUST match what rhumint-hrms expects:
+ *   license_id, org_id, iat, exp (null for lifetime), seats, modules
+ *
+ * @see rhumint-hrms/backend/app/core/license.py ::verify_token()
  */
 
 export interface LicenseTokenPayload {
   license_id: string;
   org_id: string;
-  issued_at: number;
-  expires_at: number | null;
+  iat: number;          // Unix timestamp (matches rhumint-hrms field name)
+  exp: number | null;   // Unix timestamp or null for lifetime (matches rhumint-hrms)
   seats: number;
   modules: string[];
 }
@@ -44,10 +48,12 @@ export async function signToken(
     ["sign"],
   );
 
+  // Use compact JSON (no whitespace) to match rhumint-hrms _encode_token:
+  // json.dumps(payload, separators=(",", ":"))
   const encoded = new TextEncoder().encode(JSON.stringify(payload));
   const signature = await crypto.subtle.sign("Ed25519", key, encoded);
 
-  const payloadB64 = base64url(new TextEncoder().encode(JSON.stringify(payload)));
+  const payloadB64 = base64url(encoded);
   const sigB64 = base64url(signature);
 
   return `${payloadB64}.${sigB64}`;
