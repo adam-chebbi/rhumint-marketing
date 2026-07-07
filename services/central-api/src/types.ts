@@ -1,8 +1,8 @@
 export interface LicenseTokenPayload {
   license_id: string;
   org_id: string;
-  issued_at: number;
-  expires_at: number | null;
+  iat: number;
+  exp: number | null;
   seats: number;
   modules: string[];
 }
@@ -20,7 +20,23 @@ export interface License {
   created_at: string;
 }
 
-export interface GumroadSale {
+export interface Purchase {
+  id: string;
+  gumroad_sale_id: string;
+  email: string;
+  product_name: string;
+  product_id: string;
+  amount_cents: number;
+  currency: string;
+  is_gift: number;
+  event_type: string;
+  license_id: string | null;
+  refunded_at: string | null;
+  disputed_at: string | null;
+  created_at: string;
+}
+
+export interface GumroadWebhookPayload {
   sale_id: string;
   email: string;
   product_name: string;
@@ -30,6 +46,7 @@ export interface GumroadSale {
   amount_cents: number;
   currency: string;
   is_gift: boolean;
+  event: string;
 }
 
 export interface UpdateManifest {

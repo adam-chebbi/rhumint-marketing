@@ -1,4 +1,6 @@
-import type { License } from "../types";
+import type { License, Purchase } from "../types";
+
+// ── Licenses ──────────────────────────────────────────────────────────────
 
 export async function createLicense(
   db: D1Database,
@@ -36,6 +38,17 @@ export async function revokeLicense(
   return result.meta.changes > 0;
 }
 
+export async function revokeLicenseBySaleId(
+  db: D1Database,
+  saleId: string,
+): Promise<boolean> {
+  const result = await db
+    .prepare("UPDATE licenses SET revoked_at = ? WHERE gumroad_sale_id = ? AND revoked_at IS NULL")
+    .bind(new Date().toISOString(), saleId)
+    .run();
+  return result.meta.changes > 0;
+}
+
 export async function listLicenses(db: D1Database): Promise<License[]> {
   return (await db
     .prepare("SELECT * FROM licenses ORDER BY created_at DESC")
@@ -57,4 +70,64 @@ export async function getLicenseBySaleId(
     .bind(saleId)
     .first<License>();
   return result || null;
+}
+
+// ── Purchases ─────────────────────────────────────────────────────────────
+
+export async function createPurchase(
+  db: D1Database,
+  purchase: Purchase,
+): Promise<void> {
+  const { id, gumroad_sale_id, email, product_name, product_id, amount_cents, currency, is_gift, event_type, license_id } = purchase;
+  await db
+    .prepare(
+      `INSERT INTO purchases (id, gumroad_sale_id, email, product_name, product_id, amount_cents, currency, is_gift, event_type, license_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(id, gumroad_sale_id, email, product_name, product_id, amount_cents, currency, is_gift, event_type, license_id)
+    .run();
+}
+
+export async function getPurchaseBySaleId(
+  db: D1Database,
+  saleId: string,
+): Promise<Purchase | null> {
+  const result = await db
+    .prepare("SELECT * FROM purchases WHERE gumroad_sale_id = ?")
+    .bind(saleId)
+    .first<Purchase>();
+  return result || null;
+}
+
+export async function markPurchaseRefunded(
+  db: D1Database,
+  saleId: string,
+): Promise<boolean> {
+  const result = await db
+    .prepare("UPDATE purchases SET refunded_at = ? WHERE gumroad_sale_id = ? AND refunded_at IS NULL")
+    .bind(new Date().toISOString(), saleId)
+    .run();
+  return result.meta.changes > 0;
+}
+
+export async function markPurchaseDisputed(
+  db: D1Database,
+  saleId: string,
+): Promise<boolean> {
+  const result = await db
+    .prepare("UPDATE purchases SET disputed_at = ? WHERE gumroad_sale_id = ? AND disputed_at IS NULL")
+    .bind(new Date().toISOString(), saleId)
+    .run();
+  return result.meta.changes > 0;
+}
+
+export async function linkPurchaseToLicense(
+  db: D1Database,
+  saleId: string,
+  licenseId: string,
+): Promise<void> {
+  await db
+    .prepare("UPDATE purchases SET license_id = ? WHERE gumroad_sale_id = ?")
+    .bind(licenseId, saleId)
+    .run();
 }

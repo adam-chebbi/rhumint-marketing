@@ -1,12 +1,27 @@
+# ── Cryptography ───────────────────────────────────────────────────────────
+
 # Ed25519 private key for signing license tokens.
 # Generate with: openssl genpkey -algorithm ed25519 -out private.pem
 # Then copy the contents of private.pem here (on a single line, preserving PEM headers).
 # This key must NEVER appear in rhumint-hrms or any public repository.
 ED25519_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nYOUR_BASE64_KEY_HERE\n-----END PRIVATE KEY-----
 
-# Gumroad webhook secret (optional). Set in your Gumroad settings under
-# "Ping" -> Webhook secret. If omitted, webhook signature is not verified.
+# ── Gumroad ────────────────────────────────────────────────────────────────
+
+# Gumroad webhook secret (recommended). Set in Gumroad settings under
+# "Advanced Features" → "Webhook Secret". Used to verify X-Gumroad-Signature
+# header via HMAC-SHA256.
 GUMROAD_WEBHOOK_SECRET=
 
-# Environment: "development" or "production". Defaults to production.
+# ── Email (Cloudflare Email Sending) ──────────────────────────────────────
+
+# From address for license delivery emails.
+# The domain must be onboarded to Cloudflare Email Sending:
+#   npx wrangler email sending enable yourdomain.com
+# Defaults to "license@rhumint.com" if not set.
+EMAIL_FROM=license@rhumint.com
+EMAIL_FROM_NAME=Rhumint Licenses
+
+# ── Environment ────────────────────────────────────────────────────────────
+
 ENVIRONMENT=development

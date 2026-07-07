@@ -6,8 +6,14 @@
   "compatibility_flags": ["nodejs_compat"],
 
   "vars": {
-    "ENVIRONMENT": "production"
+    "ENVIRONMENT": "production",
+    "EMAIL_FROM": "license@rhumint.com",
+    "EMAIL_FROM_NAME": "Rhumint Licenses"
   },
+
+  "send_email": [
+    { "name": "EMAIL", "remote": true }
+  ],
 
   "d1_databases": [
     {

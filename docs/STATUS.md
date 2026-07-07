@@ -96,9 +96,20 @@ The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
 - [x] Version manifest endpoint (`GET /api/updates/manifest`)
   - [x] Returns latest_version, docker_tag, changelog
 - [x] Gumroad webhook endpoint (`POST /api/webhooks/gumroad`)
-  - [x] Signed header verification (optional)
-  - [x] Deduplication by sale_id
-  - [x] Auto-issues lifetime license
+  - [x] HMAC-SHA256 signature verification on raw body (constant-time via Web Crypto API)
+  - [x] Event routing: sale → purchase + license + email; refund/dispute → revoke; ping → 200
+  - [x] Deduplication by sale_id (idempotent — SQL UNIQUE + existence check)
+  - [x] Auto-issues lifetime license on valid sale
+  - [x] Linked purchase record in new `purchases` table (migration 002)
+  - [x] Delivery email via Cloudflare Email Sending (2,000/day free tier)
+  - [x] Email is best-effort: failure logged, license still issued
+  - [x] D1 `batch()` for atomic purchase + license insert
+- [x] Gumroad sync documentation in `docs/modules/gumroad-sync.md`
+  - [x] Payload verification explained (why raw body matters)
+  - [x] Full ingestion flow diagram
+  - [x] Failure/retry handling (Gumroad's at-least-once, idempotency, dead-letter)
+  - [x] Email delivery mechanism choice rationale (Cloudflare vs SendGrid vs Resend)
+  - [x] Manual testing commands (HMAC signature generation, curl examples)
 - [x] API contract documented in `docs/modules/license-api.md`
 - [ ] Next.js app initialized on Cloudflare Pages (`site/`)
 - [ ] Product-owner admin panel (sales dashboard, license CRUD)
