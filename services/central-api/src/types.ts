@@ -68,3 +68,23 @@ export interface UpdateManifest {
   docker_tag: string;
   min_upgradable_version: string;
 }
+
+export interface Ticket {
+  id: string;
+  org_id: string | null;
+  contact_email: string | null;
+  subject: string;
+  description: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  closed_at: string | null;
+}
+
+export interface Heartbeat {
+  id: string;
+  license_id: string;
+  org_id: string;
+  version: string;
+  created_at: string;
+}

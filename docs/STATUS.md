@@ -150,5 +150,17 @@ The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
     - [x] Extend action (date input → new token)
     - [x] Revoke action (confirmation dialog)
 - [x] Admin panel documentation in `docs/modules/admin-panel.md`
+- [x] Support ticket log (`/tickets`)
+  - [x] Tickets table (migration 004) + types + DB helpers (list, create, close)
+  - [x] `GET /api/admin/tickets`, `POST /api/admin/tickets`, `POST /api/admin/tickets/:id/close`
+  - [x] Ticket cards with priority badge, org, contact, description, timestamps
+  - [x] Filter tabs: All / Open / Closed
+  - [x] New Ticket form with subject, org, email, description, priority
+  - [x] Inline close button on open tickets
+- [x] Client version tracking (`/versions`)
+  - [x] Heartbeats table (migration 005) + types + DB helpers
+  - [x] `POST /api/license/heartbeat` — client reports version (authenticated by license token)
+  - [x] `GET /api/admin/versions` — latest heartbeat per org
+  - [x] Versions page with org, version badge, license ID, last reported timestamp
 - [ ] Marketing pages (landing, features, pricing)
 - [ ] Everything below is not yet started

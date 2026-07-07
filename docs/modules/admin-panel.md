@@ -10,6 +10,8 @@ This panel is for **product-owner use only** — the person building and selling
 - Sales dashboard: revenue totals, monthly revenue bars, purchase history synced from Gumroad
 - License management: search licenses by org/email/ID, view status, manually issue, extend, or revoke
 - Token display with copy-to-clipboard for support cases
+- Support ticket log: manually log inquiries with subject, org, contact, priority; track open/closed status
+- Client version tracking: view which version each org's instance is running (reported via heartbeat)
 
 **Out of scope (current MVP):**
 - Multi-user auth (no client login, no reseller portal, no SSO)
@@ -42,6 +44,10 @@ The admin panel is the consumer of the Central API's admin-protected endpoints. 
 | Issue license | `POST /api/license/issue` | Same |
 | Revoke license | `POST /api/license/:id/revoke` | Same |
 | Extend license | `POST /api/license/:id/extend` | Same |
+| Tickets list | `GET /api/admin/tickets` | Same |
+| Create ticket | `POST /api/admin/tickets` | Same |
+| Close ticket | `POST /api/admin/tickets/:id/close` | Same |
+| Client versions | `GET /api/admin/versions` | Same |
 
 **Environment variables:**
 - `CENTRAL_API_URL` — base URL of the Central API Worker (e.g., `https://central.rhumint.com`)
@@ -74,6 +80,22 @@ The admin panel is the consumer of the Central API's admin-protected endpoints. 
 - **Actions panel** (only when license is active):
   - **Extend**: Toggles a date input. Submitting calls `POST /api/license/:id/extend`, updates expiry, copies new token to clipboard
   - **Revoke**: Confirmation dialog, then `POST /api/license/:id/revoke`
+
+### `/tickets` — Support Ticket Log
+
+- **Filter tabs**: All / Open / Closed with counts
+- **Ticket cards**: Priority badge (high/normal/low), subject, org, contact email, description, timestamps
+- **Close button** on open tickets (inline, no page reload)
+- **New Ticket form**: Subject, Org ID, Contact Email, Description, Priority selector
+  - Toggle form open/closed with "New Ticket" / "Cancel" button
+  - Created via `POST /api/admin/tickets`, list refreshes after creation
+
+### `/versions` — Client Version Tracking
+
+- **Description text**: Explains that clients report their version via heartbeat
+- **Table**: Org, Version (badge), License ID, Last Reported timestamp
+- Data sourced from `GET /api/admin/versions` which returns the latest heartbeat per org
+- Clients call `POST /api/license/heartbeat` with their license token and running version
 
 ## Environment Variables
 

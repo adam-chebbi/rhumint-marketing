@@ -14,6 +14,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <Link href="/licenses" className="rounded-lg px-3 py-2 text-gray-300 hover:bg-gray-800 hover:text-gray-100">
             Licenses
           </Link>
+          <Link href="/tickets" className="rounded-lg px-3 py-2 text-gray-300 hover:bg-gray-800 hover:text-gray-100">
+            Tickets
+          </Link>
+          <Link href="/versions" className="rounded-lg px-3 py-2 text-gray-300 hover:bg-gray-800 hover:text-gray-100">
+            Versions
+          </Link>
         </nav>
         <div className="mt-auto">
           <LogoutButton />

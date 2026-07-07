@@ -116,3 +116,55 @@ export async function extendLicense(id: string, expiresAt: string | null): Promi
     body: JSON.stringify({ expires_at: expiresAt }),
   });
 }
+
+// ── Tickets ───────────────────────────────────────────────────────────────
+
+export interface Ticket {
+  id: string;
+  org_id: string | null;
+  contact_email: string | null;
+  subject: string;
+  description: string;
+  status: string;
+  priority: string;
+  created_at: string;
+  closed_at: string | null;
+}
+
+export async function fetchTickets(): Promise<Ticket[]> {
+  const data = await apiFetch("/admin/tickets");
+  return data.tickets;
+}
+
+export async function createTicket(params: {
+  subject: string;
+  org_id?: string;
+  contact_email?: string;
+  description?: string;
+  priority?: string;
+}): Promise<Ticket> {
+  const data = await apiFetch("/admin/tickets", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+  return data.ticket;
+}
+
+export async function closeTicket(id: string): Promise<void> {
+  await apiFetch(`/admin/tickets/${id}/close`, { method: "POST" });
+}
+
+// ── Versions ──────────────────────────────────────────────────────────────
+
+export interface Heartbeat {
+  id: string;
+  license_id: string;
+  org_id: string;
+  version: string;
+  created_at: string;
+}
+
+export async function fetchVersions(): Promise<Heartbeat[]> {
+  const data = await apiFetch("/admin/versions");
+  return data.heartbeats;
+}

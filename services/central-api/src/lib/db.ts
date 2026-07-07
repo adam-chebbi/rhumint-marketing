@@ -1,4 +1,4 @@
-import type { License, Purchase, Release } from "../types";
+import type { License, Purchase, Release, Ticket, Heartbeat } from "../types";
 
 // ── Licenses ──────────────────────────────────────────────────────────────
 
@@ -200,6 +200,55 @@ export async function extendLicense(
     .bind(expiresAt, licenseId)
     .run();
   return result.meta.changes > 0;
+}
+
+// ── Tickets ───────────────────────────────────────────────────────────────
+
+export async function listTickets(db: D1Database): Promise<Ticket[]> {
+  return (await db
+    .prepare("SELECT * FROM tickets ORDER BY created_at DESC")
+    .all<Ticket>()).results;
+}
+
+export async function createTicket(db: D1Database, ticket: Ticket): Promise<void> {
+  const { id, org_id, contact_email, subject, description, status, priority, created_at } = ticket;
+  await db
+    .prepare(
+      `INSERT INTO tickets (id, org_id, contact_email, subject, description, status, priority, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(id, org_id, contact_email, subject, description, status, priority, created_at)
+    .run();
+}
+
+export async function closeTicket(db: D1Database, id: string): Promise<boolean> {
+  const result = await db
+    .prepare("UPDATE tickets SET status = 'closed', closed_at = ? WHERE id = ? AND status = 'open'")
+    .bind(new Date().toISOString(), id)
+    .run();
+  return result.meta.changes > 0;
+}
+
+// ── Heartbeats ────────────────────────────────────────────────────────────
+
+export async function recordHeartbeat(db: D1Database, hb: Heartbeat): Promise<void> {
+  const { id, license_id, org_id, version, created_at } = hb;
+  await db
+    .prepare("INSERT INTO heartbeats (id, license_id, org_id, version, created_at) VALUES (?, ?, ?, ?, ?)")
+    .bind(id, license_id, org_id, version, created_at)
+    .run();
+}
+
+export async function getLatestHeartbeats(db: D1Database): Promise<Heartbeat[]> {
+  return (await db
+    .prepare(
+      `SELECT h.* FROM heartbeats h
+       WHERE h.created_at = (
+         SELECT MAX(created_at) FROM heartbeats h2 WHERE h2.org_id = h.org_id
+       )
+       ORDER BY h.created_at DESC`,
+    )
+    .all<Heartbeat>()).results;
 }
 
 // ── Releases ──────────────────────────────────────────────────────────────

@@ -231,4 +231,60 @@ app.post("/:id/extend", async (c) => {
   return c.json({ success: true, token, expires_at: newExp });
 });
 
+// ───────────────────────────────────────────────────────────────────────────
+// Client heartbeat — reports the current product version running at an org.
+// Authenticated by the license token (decoded for license_id + org_id).
+// ───────────────────────────────────────────────────────────────────────────
+
+app.post("/heartbeat", async (c) => {
+  const body = await c.req.json<{ token: string; version: string }>();
+  if (!body.token || !body.version) {
+    return c.json({ error: "token and version are required" }, 400);
+  }
+
+  const parts = body.token.split(".");
+  if (parts.length !== 2) {
+    return c.json({ error: "Malformed token" }, 400);
+  }
+
+  let payloadRaw: string;
+  try {
+    const padded = parts[0].replace(/-/g, "+").replace(/_/g, "/");
+    const mod = padded.length % 4;
+    payloadRaw = atob(mod ? padded + "=".repeat(4 - mod) : padded);
+  } catch {
+    return c.json({ error: "Invalid base64url encoding" }, 400);
+  }
+
+  let payload: { license_id?: string; org_id?: string };
+  try {
+    payload = JSON.parse(payloadRaw);
+  } catch {
+    return c.json({ error: "Invalid JSON in token payload" }, 400);
+  }
+
+  if (!payload.license_id || !payload.org_id) {
+    return c.json({ error: "Token missing license_id or org_id" }, 400);
+  }
+
+  const license = await getLicense(c.env.DB, payload.license_id);
+  if (!license) {
+    return c.json({ error: "License not found" }, 404);
+  }
+  if (license.revoked_at) {
+    return c.json({ error: "License revoked" }, 403);
+  }
+
+  const { recordHeartbeat } = await import("../lib/db");
+  await recordHeartbeat(c.env.DB, {
+    id: crypto.randomUUID(),
+    license_id: payload.license_id,
+    org_id: payload.org_id,
+    version: body.version,
+    created_at: new Date().toISOString(),
+  });
+
+  return c.json({ success: true });
+});
+
 export default app;
