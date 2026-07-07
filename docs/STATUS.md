@@ -26,6 +26,8 @@ CI deploy targets.
 |-----|-------|---------|
 | `ED25519_PRIVATE_KEY` | `wrangler secret put` | Signs license tokens. NEVER in rhumint-hrms. |
 | `GUMROAD_WEBHOOK_SECRET` | `wrangler secret put` | Verifies Gumroad webhook payloads (optional). |
+| `RELEASE_API_KEY` | `wrangler secret put` | Authenticates CI publish calls to POST /api/updates/publish. |
+| `ADMIN_API_KEY` | `wrangler secret put` | Authenticates admin panel calls to GET /api/admin/*. |
 | `ENVIRONMENT` | `wrangler.jsonc` vars | `production` or `development`. |
 
 The **Ed25519 private key** is the most sensitive credential in the entire Rhumint
@@ -122,7 +124,31 @@ The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
   - [x] Email delivery mechanism choice rationale (Cloudflare vs SendGrid vs Resend)
   - [x] Manual testing commands (HMAC signature generation, curl examples)
 - [x] API contract documented in `docs/modules/license-api.md`
-- [ ] Next.js app initialized on Cloudflare Pages (`site/`)
-- [ ] Product-owner admin panel (sales dashboard, license CRUD)
+- [x] Admin API endpoints (`src/routes/admin.ts`)
+  - [x] `GET /api/admin/purchases` — all purchases with joined license info
+  - [x] `GET /api/admin/stats` — total revenue, active/refunded counts, monthly revenue series
+  - [x] Bearer-token auth via `ADMIN_API_KEY` secret
+- [x] Extend license endpoint (`POST /api/license/:id/extend`)
+  - [x] Updates expires_at in DB, returns new signed token
+- [x] Next.js 14 App Router admin panel scaffolded (`site/`)
+  - [x] Tailwind CSS, TypeScript, standalone output
+- [x] Single-user auth (HMAC-signed session cookie, 24h expiry)
+  - [x] Login page at `/login` with `ADMIN_PASSWORD`
+  - [x] Middleware redirects unauthenticated requests
+  - [x] Logout button in sidebar
+- [x] Sales dashboard (`/dashboard`)
+  - [x] 4 stat cards: Total Revenue, Active Licenses, Total Purchases, Refunded
+  - [x] Monthly revenue bar chart (CSS-only, no chart library)
+  - [x] Recent purchases table (last 20, with status badges)
+- [x] License management (`/licenses`)
+  - [x] Client-side search by org/email/ID
+  - [x] Status badges (Active/Expired/Revoked)
+  - [x] Issue License modal with form (org, email, seats, modules, expiry)
+  - [x] Token display with copy button after issue
+  - [x] License detail page (`/licenses/[id]`)
+    - [x] Full metadata display
+    - [x] Extend action (date input → new token)
+    - [x] Revoke action (confirmation dialog)
+- [x] Admin panel documentation in `docs/modules/admin-panel.md`
 - [ ] Marketing pages (landing, features, pricing)
 - [ ] Everything below is not yet started

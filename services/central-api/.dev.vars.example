@@ -29,6 +29,12 @@ EMAIL_FROM_NAME=Rhumint Licenses
 # Generate with: openssl rand -hex 32
 RELEASE_API_KEY=
 
+# ── Admin API ──────────────────────────────────────────────────────────────
+
+# API key for the admin panel to call GET /api/admin/* and POST /api/license/:id/extend.
+# The admin panel sends this as Bearer token in every request.
+ADMIN_API_KEY=
+
 # ── Environment ────────────────────────────────────────────────────────────
 
 ENVIRONMENT=development

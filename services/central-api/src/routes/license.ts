@@ -196,4 +196,39 @@ app.post("/:id/revoke", async (c) => {
   return c.json({ success: true });
 });
 
+// ───────────────────────────────────────────────────────────────────────────
+// Extend a license's expiry (admin use — support cases)
+// ───────────────────────────────────────────────────────────────────────────
+
+app.post("/:id/extend", async (c) => {
+  const { id } = c.req.param();
+  const license = await getLicense(c.env.DB, id);
+  if (!license) return c.json({ error: "License not found" }, 404);
+
+  const body = await c.req.json<{ expires_at: string | null }>();
+  const newExp = body.expires_at ?? null;
+
+  if (newExp !== null && isNaN(Date.parse(newExp))) {
+    return c.json({ error: "Invalid expires_at date format" }, 400);
+  }
+
+  const ok = await extendLicense(c.env.DB, id, newExp);
+  if (!ok) return c.json({ error: "Failed to update license" }, 500);
+
+  const payload = {
+    license_id: license.id,
+    org_id: license.org_id,
+    iat: Math.floor(Date.now() / 1000),
+    exp: newExp ? Math.floor(new Date(newExp).getTime() / 1000) : null,
+    seats: license.seats,
+    modules: JSON.parse(license.modules),
+  };
+
+  const { getPrivateKey } = await import("../lib/config");
+  const { signToken } = await import("../lib/crypto");
+  const token = await signToken(payload, getPrivateKey(c.env));
+
+  return c.json({ success: true, token, expires_at: newExp });
+});
+
 export default app;
