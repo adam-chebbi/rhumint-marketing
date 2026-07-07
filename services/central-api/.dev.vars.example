@@ -1,0 +1,12 @@
+# Ed25519 private key for signing license tokens.
+# Generate with: openssl genpkey -algorithm ed25519 -out private.pem
+# Then copy the contents of private.pem here (on a single line, preserving PEM headers).
+# This key must NEVER appear in rhumint-hrms or any public repository.
+ED25519_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nYOUR_BASE64_KEY_HERE\n-----END PRIVATE KEY-----
+
+# Gumroad webhook secret (optional). Set in your Gumroad settings under
+# "Ping" -> Webhook secret. If omitted, webhook signature is not verified.
+GUMROAD_WEBHOOK_SECRET=
+
+# Environment: "development" or "production". Defaults to production.
+ENVIRONMENT=development
