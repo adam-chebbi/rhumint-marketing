@@ -49,8 +49,20 @@ export interface GumroadWebhookPayload {
   event: string;
 }
 
+export interface Release {
+  id: string;
+  version: string;
+  published_at: string;
+  changelog: string;
+  docker_tag: string;
+  min_upgradable_version: string;
+  created_at: string;
+}
+
 export interface UpdateManifest {
   latest_version: string;
+  current_version: string;
+  update_available: boolean;
   published_at: string;
   changelog: string;
   docker_tag: string;

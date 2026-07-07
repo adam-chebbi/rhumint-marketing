@@ -3,6 +3,7 @@ export interface Env {
   ENVIRONMENT: string;
   ED25519_PRIVATE_KEY: string;
   GUMROAD_WEBHOOK_SECRET?: string;
+  RELEASE_API_KEY?: string;
   EMAIL: SendEmail;
   EMAIL_FROM?: string;
   EMAIL_FROM_NAME?: string;

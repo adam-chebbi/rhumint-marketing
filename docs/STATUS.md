@@ -94,7 +94,18 @@ The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
   - [x] Returns array of `{license_id, revoked_at}` for all revoked licenses
   - [x] Used by `rhumint-hrms` for opportunistic offline revocation checks
 - [x] Version manifest endpoint (`GET /api/updates/manifest`)
-  - [x] Returns latest_version, docker_tag, changelog
+  - [x] Returns latest_version, docker_tag, changelog, min_upgradable_version
+  - [x] Accepts `current_version` query param to compute `update_available`/`blocked`
+  - [x] Semver comparison (major.minor.patch tuple)
+  - [x] `POST /api/updates/publish` — CI pipeline publishes new releases
+    - [x] Bearer token auth via `RELEASE_API_KEY` secret
+    - [x] Validates version format (semver, required), docker_tag (required)
+    - [x] Idempotent: returns existing release on duplicate version
+  - [x] `GET /api/updates/releases` — list all releases
+  - [x] `GET /api/updates/releases/:version` — get specific release
+  - [x] D1 migration: `003_releases.sql` (releases table + index)
+  - [x] Types (`Release`, `UpdateManifest`) and DB helpers (`createRelease`, `getLatestRelease`, `getReleaseByVersion`, `listReleases`)
+  - [x] Documentation in `docs/modules/update-manifest.md`
 - [x] Gumroad webhook endpoint (`POST /api/webhooks/gumroad`)
   - [x] HMAC-SHA256 signature verification on raw body (constant-time via Web Crypto API)
   - [x] Event routing: sale → purchase + license + email; refund/dispute → revoke; ping → 200
