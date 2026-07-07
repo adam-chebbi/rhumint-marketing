@@ -2,9 +2,13 @@
 
 Public marketing site + product-owner admin panel for Rhumint HRMS.
 
-Built with Next.js on Cloudflare Pages. Fully independent from the `rhumint-hrms` repo — no shared code, no cross-imports.
+**Purpose:** Drives sales, manages licenses, and provides the product-owner control panel. Not a part of the HRMS product — customers never interact with this site.
 
-**Site content:**
+**Tech stack:** Next.js on Cloudflare Pages. Cloudflare Workers + D1 for the central license/update/sales API. Gumroad for payment processing.
+
+**Release cycle:** Independent from `rhumint-hrms`. Deploys on its own schedule via Cloudflare Pages Git integration. Zero shared code between the two repos — no submodules, no cross-imports.
+
+**What lives here:**
 - Marketing pages (landing, features, pricing, docs)
-- Product-owner admin panel (sales, license management, Gumroad sync)
-- Central license/update/sales API (Cloudflare Workers + D1)
+- Product-owner admin panel (sales dashboard, license management, Gumroad sync)
+- Central API (license issue/validate/revoke, update manifest, Gumroad webhook receiver)
