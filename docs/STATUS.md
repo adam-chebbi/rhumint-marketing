@@ -176,5 +176,15 @@ The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
   - [x] Gumroad webhook HMAC verification on raw body (already in place, documented in security doc)
   - [x] Secrets inventory documented with rotation procedure
   - [x] Full documentation in `docs/modules/central-service-security.md`
+- [x] Cross-repo contract documented in `docs/modules/cross-repo-contract.md`
+  - [x] License token format (Ed25519, base64url, canonical JSON, field names)
+  - [x] HTTP endpoints: revocations list, version manifest, heartbeat
+  - [x] Error code conventions (400/401/403/404/429/500)
+  - [x] Version compatibility table
+  - [x] Contract testing instructions
+- [x] Provider contract tests (`services/central-api/tests/contract.test.ts`)
+  - [x] Revocations list: top-level shape, empty list, entry structure
+  - [x] Health endpoint shape
+  - [x] Error code conventions: 404 with error field, 400 with error field
 - [ ] Marketing pages (landing, features, pricing)
 - [ ] Everything below is not yet started
