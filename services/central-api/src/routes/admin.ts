@@ -5,29 +5,29 @@ import type { Ticket } from "../types";
 
 const app = new Hono<{ Bindings: Env }>();
 
-function requireAdmin(c: any, env: Env): boolean {
+function requireAdmin(c: any, env: Env): Response | null {
   const key = env.ADMIN_API_KEY;
   if (!key) {
-    c.json({ error: "Admin API not configured" }, 500);
-    return false;
+    return c.json({ error: "Admin API not configured" }, 500);
   }
   const auth = c.req.header("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   if (!token || token !== key) {
-    c.json({ error: "Unauthorized" }, 401);
-    return false;
+    return c.json({ error: "Unauthorized" }, 401);
   }
-  return true;
+  return null;
 }
 
 app.get("/purchases", async (c) => {
-  if (!requireAdmin(c, c.env)) return;
+  const auth = requireAdmin(c, c.env);
+  if (auth) return auth;
   const purchases = await listPurchases(c.env.DB);
   return c.json({ purchases });
 });
 
 app.get("/stats", async (c) => {
-  if (!requireAdmin(c, c.env)) return;
+  const auth = requireAdmin(c, c.env);
+  if (auth) return auth;
   const stats = await getAdminStats(c.env.DB);
   return c.json(stats);
 });
@@ -35,13 +35,15 @@ app.get("/stats", async (c) => {
 // ── Tickets ───────────────────────────────────────────────────────────────
 
 app.get("/tickets", async (c) => {
-  if (!requireAdmin(c, c.env)) return;
+  const auth = requireAdmin(c, c.env);
+  if (auth) return auth;
   const tickets = await listTickets(c.env.DB);
   return c.json({ tickets });
 });
 
 app.post("/tickets", async (c) => {
-  if (!requireAdmin(c, c.env)) return;
+  const auth = requireAdmin(c, c.env);
+  if (auth) return auth;
   const body = await c.req.json<{
     org_id?: string;
     contact_email?: string;
@@ -72,7 +74,8 @@ app.post("/tickets", async (c) => {
 });
 
 app.post("/tickets/:id/close", async (c) => {
-  if (!requireAdmin(c, c.env)) return;
+  const auth = requireAdmin(c, c.env);
+  if (auth) return auth;
   const ok = await closeTicket(c.env.DB, c.req.param("id"));
   if (!ok) return c.json({ error: "Ticket not found or already closed" }, 404);
   return c.json({ success: true });
@@ -81,7 +84,8 @@ app.post("/tickets/:id/close", async (c) => {
 // ── Versions ──────────────────────────────────────────────────────────────
 
 app.get("/versions", async (c) => {
-  if (!requireAdmin(c, c.env)) return;
+  const auth = requireAdmin(c, c.env);
+  if (auth) return auth;
   const heartbeats = await getLatestHeartbeats(c.env.DB);
   return c.json({ heartbeats });
 });

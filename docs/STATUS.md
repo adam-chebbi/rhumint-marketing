@@ -1,5 +1,19 @@
 # STATUS.md — Rhumint Central License/Update/Sales API
 
+## Phase 2 — Product-owner infrastructure (complete)
+
+> The central license/update/sales API is live on Cloudflare Workers + D1, ready
+> to support real Gumroad sales once rhumint-hrms reaches a sellable state.
+>
+> - **License issuing, online validation, revocation** — Ed25519-signed tokens with lifetime support, online check endpoints, revocation list for opportunistic offline checks.
+> - **Gumroad webhook ingestion** — HMAC-SHA256 verification on raw body, auto-issue license + send delivery email, refund/dispute revocation, idempotent by `sale_id`.
+> - **Version manifest** — D1-backed, CI-publishable, semver comparison for client update detection.
+> - **Admin API + Next.js panel** — Dashboard, license management (issue/extend/revoke), support tickets, client version tracking. Single-user auth via HMAC-signed session cookie.
+> - **Security** — D1-backed rate limiting (30/min/IP validate, 10/min/IP webhook), validation audit logging, anomaly detection (20 failures/hour/org threshold).
+> - **Cross-repo contract** — Documented token format, HTTP endpoints, error codes, and contract tests in both repos (13 vitest + 18 pytest).
+> - **Phase 2 manual QA** — 9 bugs found and fixed during QA. All tests pass. Full log at `docs/qa/phase2-manual-qa.md`. Live integration testing (wrangler dev) blocked on Windows process management — recommended before production go-live.
+> - **Architecture decisions** logged in `docs/adr/0001`–`0006`.
+
 > Living document for the central API deployed as a Cloudflare Worker with D1.
 > This is NOT the marketing site — that lives under `site/` and has its own separate deploy.
 > See also `services/central-api/README.md` for local dev setup.
@@ -186,5 +200,18 @@ The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
   - [x] Revocations list: top-level shape, empty list, entry structure
   - [x] Health endpoint shape
   - [x] Error code conventions: 404 with error field, 400 with error field
+  - [x] Admin API: 401 on unauthenticated/wrong key
+  - [x] Webhook: 401 on missing signature
+  - [x] Issue: valid token format (2-part, canonical JSON, contract field names)
+  - [x] Issue: rejects missing fields with 400
+  - [x] Extend/revoke: 404 for nonexistent license
+- [x] Consumer contract tests (`tests/test_central_contract.py` in rhumint-hrms)
+  - [x] 18 tests covering token format, revocations list, manifest, heartbeat, error codes
+- [x] Manual QA (Phase 2) — `docs/qa/phase2-manual-qa.md`
+  - [x] Central API: 13/13 vitest contract tests pass
+  - [x] rhumint-hrms: 98/98 pytest pass
+  - [x] rhumint-hrms: MVP flows pass (7 sections, 2 expected issues)
+  - [x] 9 bugs found and fixed during QA
+  - [ ] Live wrangler dev integration (blocked on Windows process management)
 - [ ] Marketing pages (landing, features, pricing)
 - [ ] Everything below is not yet started
