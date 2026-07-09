@@ -162,5 +162,19 @@ The field names `iat` and `exp` (not `issued_at`/`expires_at`) are critical —
   - [x] `POST /api/license/heartbeat` — client reports version (authenticated by license token)
   - [x] `GET /api/admin/versions` — latest heartbeat per org
   - [x] Versions page with org, version badge, license ID, last reported timestamp
+- [x] Security baseline (migration 006 + libs + docs)
+  - [x] D1-backed sliding-window rate limiter (`src/lib/rate-limit.ts`)
+    - [x] Applied to `POST /api/license/validate` (30 req/min/IP)
+    - [x] Applied to `POST /api/webhooks/gumroad` (10 req/min/IP)
+    - [x] 429 response with `retry_after` in seconds
+    - [x] Automatic cleanup of stale entries (older than 2 windows)
+  - [x] Validation audit logging + anomaly detection (`src/lib/anomaly.ts`)
+    - [x] Every validation attempt logged to `audit_log` table (success + failure)
+    - [x] Failure rate check: if >= 20 failures/hour from one org, `anomaly_alert` event written
+    - [x] `console.warn()` emitted for Workers console observability
+  - [x] `ED25519_PRIVATE_KEY` stored exclusively as `wrangler secret put` (never in source, never client-visible)
+  - [x] Gumroad webhook HMAC verification on raw body (already in place, documented in security doc)
+  - [x] Secrets inventory documented with rotation procedure
+  - [x] Full documentation in `docs/modules/central-service-security.md`
 - [ ] Marketing pages (landing, features, pricing)
 - [ ] Everything below is not yet started

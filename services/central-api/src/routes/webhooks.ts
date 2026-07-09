@@ -114,6 +114,13 @@ For support, reply to this email.
 const app = new Hono<{ Bindings: Env }>();
 
 app.post("/gumroad", async (c) => {
+  // ── Rate limiting ────────────────────────────────────────────────
+  const ip = c.req.header("CF-Connecting-IP") ?? c.req.header("X-Forwarded-For") ?? "unknown";
+  const { checkRateLimit } = await import("../lib/rate-limit");
+  const rl = await checkRateLimit(c.env.DB, ip, "webhook-gumroad", 10, 60);
+  if (!rl.allowed) {
+    return c.json({ error: "Rate limit exceeded" }, 429);
+  }
   // ── 1. Read raw body for signature verification ─────────────────────
   const rawBody = await c.req.text();
 
